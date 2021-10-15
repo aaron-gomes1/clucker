@@ -7,6 +7,9 @@ def feed(request):
 def home(request):
     return render(request, 'home.html')
 
+def log_in(request):
+    return render(request, 'log_in.html')
+
 def sign_up(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
