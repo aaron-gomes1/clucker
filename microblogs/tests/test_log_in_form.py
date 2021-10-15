@@ -39,3 +39,4 @@ class LogInFormTestCase(TestCase):
         self.form_input['username'] = 'password'
         form = LogInForm(data=self.form_input)
         self.assertTrue(form.is_valid())
+        
