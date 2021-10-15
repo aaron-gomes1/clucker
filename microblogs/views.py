@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect, render
 from .forms import LogInForm, SignUpForm
 
@@ -8,6 +8,10 @@ def feed(request):
 
 def home(request):
     return render(request, 'home.html')
+
+def log_out(request):
+    logout(request)
+    return redirect('home')
 
 def log_in(request):
     if request.method == 'POST':
