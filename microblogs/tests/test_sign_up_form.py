@@ -4,13 +4,14 @@ from django.test import TestCase
 from django import forms
 from microblogs.forms import SignUpForm
 from microblogs.models import User
+from django.contrib.auth.hashers import check_password
 
 class SignUpFormTestCase(TestCase):
     """Unit tests of the Sign Up form."""
 
     def setUp(self):
         self.form_input = {
-            'first_name': 'jane',
+            'first_name': 'Jane',
             'last_name': 'Doe',
             'username': '@janedoe',
             'email': 'janedoe@example.org',
@@ -59,9 +60,22 @@ class SignUpFormTestCase(TestCase):
         form = SignUpForm(data=self.form_input)
         self.assertFalse(form.is_valid())
 
-    #  New password and password confirmation muc=st be identical
-
     def test_password_and_password_confirmation_are_identical(self):
         self.form_input['new_password'] = 'WrongPassword123'
         form = SignUpForm(data=self.form_input)
         self.assertFalse(form.is_valid())
+
+    def test_form_must_save_correctly(self):
+        form = SignUpForm(data=self.form_input)
+        before_count = User.objects.count()
+        form.save()
+        after_count = User.objects.count()
+        self.assertEqual(after_count, before_count+1)
+        user = User.objects.get(username='@janedoe')
+
+        self.assertEqual(user.first_name, 'Jane')
+        self.assertEqual(user.last_name, 'Doe')
+        self.assertEqual(user.email, 'janedoe@example.org')
+        self.assertEqual(user.bio, 'My bio')
+        is_password_correct = check_password('Password123', user.password)
+        self.assertTrue(is_password_correct)

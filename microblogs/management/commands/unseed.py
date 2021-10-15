@@ -7,5 +7,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for user in User.objects.all():
-            if type(user).__name__ == "User":
+            if user.is_superuser == False:
                 user.delete()
