@@ -29,7 +29,7 @@ class UserModelTest(TestCase):
     def test_username_cannot_be_nore_than_30_characters_long(self):
         self.user.username = "@" + 'x' * 30
 
-    def _test_username_must_be_unique(self):
+    def test_username_must_be_unique(self):
         User.objects.create_user(
         '@janedoe',
         first_name='Jane',
