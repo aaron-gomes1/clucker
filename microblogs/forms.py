@@ -1,6 +1,31 @@
 from django.core.validators import RegexValidator
 from django import forms
-from .models import User
+from .models import User, Post
+
+class ShowUserForm(forms.Form):
+
+    details = []
+    user = User()
+    def __init__(self, userToShow):
+        super().__init__()
+        self.user = userToShow
+        self.details.append("Username: " + self.user.username)
+        self.details.append("Bio: " + self.user.bio)
+
+class UserListForm(forms.Form):
+    users = []
+    for user in User.objects.all():
+        users.append(user)
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['text']
+
+    def save(self, user):
+        post = Post(author=user, text=self.fields['text'])
+        post.save()
+
 
 class LogInForm(forms.Form):
     username = forms.CharField(label='Username')

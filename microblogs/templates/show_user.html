@@ -3,10 +3,12 @@
 <div class="container">
   <div class="row">
     <div class="col-12">
-      <h1>Feed</h1>
-      <form action="{% url 'feed' %}" method="post">
+      <h1>User</h1>
+      {% for detail in form.details %}
+        <p>{{ detail }}</p>
+      {% endfor %}
+      <form action={% url 'show_user' form.username %} method="post">
         {% csrf_token %}
-        <input type="submit" value="New Post" class="btn btn-primary">
       </form>
     </div>
   </div>

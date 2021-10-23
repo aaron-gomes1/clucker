@@ -17,3 +17,14 @@ class User(AbstractUser):
         unique = False,
         blank = True
     )
+
+class Post(models.Model):
+    class Meta:
+        ordering = ["-created_at"]
+    author = models.ForeignKey(User, on_delete=models.CASCADE,)
+    text = models.TextField(
+        max_length = 280,
+        unique = False,
+        blank = True
+    )
+    created_at = models.DateTimeField(auto_now_add=True, blank=False)
