@@ -5,7 +5,7 @@
     <div class="col-12">
       <h1>User List</h1>
       {% for user in form.users %}
-        <p><a href="{% url 'show_user' user.username %}">{{ user.username }}</a></p>
+        <p><a href="{% url 'show_user' user.id %}">{{ user.username }}</a></p>
       {% endfor %}
       <form action="{% url 'users' %}" method="post">
         {% csrf_token %}

@@ -18,12 +18,10 @@ def new_post(request):
     form = PostForm()
     return render(request, 'new_post.html', {'form' : form})
 
-def show_user(request, username):
-    #reverse('show_user', kwargs={'username': username})
-    form = ShowUserForm(User.objects.get(username=username))
+def show_user(request, id):
+    form = ShowUserForm(User.objects.get(id=id))
     return render(request, 'show_user.html', {'form' : form})
-    #return HttpResponse(f'The user is {username}')
-    #return render(request, 'show_user.html')
+
 
 def user_list(request):
     form = UserListForm()
