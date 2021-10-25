@@ -1,9 +1,7 @@
 """"Test of the new post view"""
-from django.contrib import messages
 from django.test import TestCase
 from django.urls import reverse
 from microblogs.forms import PostForm
-from microblogs.models import User
 
 class NewPostTestCase(TestCase):
     """Test of the new post view"""
@@ -11,7 +9,7 @@ class NewPostTestCase(TestCase):
     def setUp(self):
         self.url = reverse('new_post')
 
-    def test_log_in_url(self):
+    def test_new_post_url(self):
         self.assertEqual(self.url, '/new_post/')
 
     def test_access_post(self):

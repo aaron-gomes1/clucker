@@ -7,8 +7,9 @@
       {% for detail in form.details %}
         <p>{{ detail }}</p>
       {% endfor %}
-      <form action={% url 'show_user' form.username %} method="post">
+      <form>
         {% csrf_token %}
+        {% include 'partials/bootstrap_form.html' with form=form %}
       </form>
     </div>
   </div>

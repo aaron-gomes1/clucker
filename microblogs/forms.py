@@ -8,9 +8,12 @@ class ShowUserForm(forms.Form):
     user = User()
     def __init__(self, userToShow):
         super().__init__()
+        self.details = []
         self.user = userToShow
         self.details.append("Username: " + self.user.username)
         self.details.append("Bio: " + self.user.bio)
+        self.details.append("First Name: " + self.user.first_name)
+        self.details.append("Last Name: " + self.user.last_name)
 
 class UserListForm(forms.Form):
     users = []
@@ -22,10 +25,13 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ['text']
 
-    def save(self, user):
-        post = Post(author=user, text=self.fields['text'])
-        post.save()
 
+    def save(self, user):
+        super().save(commit=False)
+        if self.is_valid():
+            post = Post(author=user, text=self.cleaned_data.get('text'))
+            post.save()
+        return post
 
 class LogInForm(forms.Form):
     username = forms.CharField(label='Username')
