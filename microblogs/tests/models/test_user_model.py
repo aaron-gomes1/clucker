@@ -6,17 +6,13 @@ from microblogs.models import User
 class UserModelTest(TestCase):
     """Unit tests of the User model."""
 
-    def setUp(self):
-        self.user = User.objects.create_user(
-            '@johndoe',
-            first_name="John",
-            last_name='Doe',
-            email='johndoe@example.org',
-            bio='Hello, I am John Doe',
-            password='Password123',
-            is_active=True,
-        )
+    fixtures = [
+        'microblogs/tests/fixtures/default_user.json',
+        'microblogs/tests/fixtures/other_users.json'
+    ]
 
+    def setUp(self):
+        self.user = User.objects.get(username='@johndoe')
 
     def test_valid_user(self):
         self._assert_user_is_valid()
@@ -32,14 +28,8 @@ class UserModelTest(TestCase):
         self.user.username = "@" + 'x' * 30
 
     def test_username_must_be_unique(self):
-        User.objects.create_user(
-        '@janedoe',
-        first_name='Jane',
-        last_name='Doe',
-        email='janedoe@example.org',
-        password='Password123',
-        bio='The quick brown fox jumped over the lazy dog'
-        )
+        User.objects.get(username='@janedoe')
+
         self.user.username = '@janedoe'
         self._assert_user_is_invalid()
 
