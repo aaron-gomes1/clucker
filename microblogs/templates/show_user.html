@@ -1,16 +1,9 @@
 {% extends 'base_content.html' %}
 {% block content %}
 <div class="container">
-  <div class="row">
-    <div class="col-12">
-      <h1>User</h1>
-      {% for detail in form.details %}
-        <p>{{ detail }}</p>
-      {% endfor %}
-      <form>
-        {% csrf_token %}
-        {% include 'partials/bootstrap_form.html' with form=form %}
-      </form>
+  <div class="row content">
+    <div class="col-xs-12 col-lg-6 col-xl-4">
+      {% include 'partials/user_profile.html' %}
     </div>
   </div>
 </div>

@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-from .forms import LogInForm, SignUpForm, PostForm, UserListForm, ShowUserForm
+from .forms import LogInForm, SignUpForm, PostForm, UserListForm
 from .models import User
 from django.urls import reverse
 
@@ -19,9 +19,14 @@ def new_post(request):
     form = PostForm()
     return render(request, 'new_post.html', {'form' : form})
 
-def show_user(request, id):
-    form = ShowUserForm(User.objects.get(id=id))
-    return render(request, 'show_user.html', {'form' : form})
+@login_required
+def show_user(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+    except ObjectDoesNotExist:
+        return redirect('users')
+    else:
+        return render(request, 'show_user.html', {'user' : user})
 
 @login_required
 def user_list(request):
