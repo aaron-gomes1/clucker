@@ -7,15 +7,11 @@ from django.utils import timezone
 class PostModelTest(TestCase):
     """Unit tests of the Post model."""
 
+    fixtures = ['microblogs/tests/fixtures/default_user.json']
+
     def setUp(self):
-        self.user = User.objects.create_user(
-        '@johndoe',
-        first_name='John',
-        last_name='Doe',
-        email='johndoe@example.org',
-        password='Password123',
-        bio='The quick brown fox jumped over the lazy dog'
-        )
+        super(TestCase, self).setUp()
+        self.user = User.objects.get(username='@johndoe')
 
         self.post = Post.objects.create(
             author = self.user,

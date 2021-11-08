@@ -43,4 +43,4 @@ class PostFormTestCase(TestCase):
         self.assertEqual(after_count, before_count+1)
         self.assertEqual(post.author.username, '@janedoe')
         self.assertEqual(post.text, input['text'])
-        self.assertEqual(post.user, user)
+        self.assertEqual(post.author, user)

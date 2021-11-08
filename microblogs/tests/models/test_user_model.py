@@ -8,13 +8,15 @@ class UserModelTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-        '@johndoe',
-        first_name='John',
-        last_name='Doe',
-        email='johndoe@example.org',
-        password='Password123',
-        bio='The quick brown fox jumped over the lazy dog'
+            '@johndoe',
+            first_name="John",
+            last_name='Doe',
+            email='johndoe@example.org',
+            bio='Hello, I am John Doe',
+            password='Password123',
+            is_active=True,
         )
+
 
     def test_valid_user(self):
         self._assert_user_is_valid()
