@@ -36,6 +36,7 @@ def user_list(request):
 def home(request):
     return render(request, 'home.html')
 
+@login_required
 def feed(request):
     if request.user.is_authenticated == True:
         if request.method == 'POST':
