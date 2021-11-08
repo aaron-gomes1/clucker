@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from .forms import LogInForm, SignUpForm, PostForm, UserListForm, ShowUserForm
 from .models import User
@@ -22,7 +23,7 @@ def show_user(request, id):
     form = ShowUserForm(User.objects.get(id=id))
     return render(request, 'show_user.html', {'form' : form})
 
-
+@login_required
 def user_list(request):
     form = UserListForm()
     return render(request, 'user_list.html', {'form': form})
@@ -45,22 +46,20 @@ def log_out(request):
     return redirect('home')
 
 def log_in(request):
-    if request.user.is_authenticated == False:
-        if request.method == 'POST':
-            form = LogInForm(request.POST)
-            if form.is_valid():
-                username = form.cleaned_data.get('username')
-                password = form.cleaned_data.get('password')
-                user = authenticate(username=username, password=password)
-                if user is not None:
-                    login(request, user)
-                    return redirect('feed')
-            # Add error message here
-            messages.add_message(request, messages.ERROR, "The credientals provided are invalid")
-        form = LogInForm()
-        return render(request, 'log_in.html', {'form': form})
-    else:
-        return redirect('feed')
+    if request.method == 'POST':
+        form = LogInForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                redirect_url = request.POST.get('next') or 'feed'
+                return redirect(redirect_url)
+        messages.add_message(request, messages.ERROR, "The credientals provided are invalid")
+    form = LogInForm()
+    next = request.GET.get('next') or ''
+    return render(request, 'log_in.html', {'form': form, 'next': next})
 
 def sign_up(request):
     if request.method == 'POST':
