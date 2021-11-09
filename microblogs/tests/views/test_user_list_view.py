@@ -25,9 +25,6 @@ class UserListTestCase(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'user_list.html')
-        form = response.context['form']
-        self.assertTrue(isinstance(form, UserListForm))
-        self.assertFalse(form.is_bound)
 
     def test_get_user_list_redirects_when_not_logged_in(self):
         redirect_url = reverse_with_next('log_in', self.url)

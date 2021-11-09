@@ -3,13 +3,18 @@
 <div class="container">
   <div class="row">
     <div class="col-12">
-      <h1>User List</h1>
-      {% for user in form.users %}
-        <p><a href="{% url 'show_user' user.id %}">{{ user.username }}</a></p>
-      {% endfor %}
-      <form action="{% url 'users' %}" method="post">
-        {% csrf_token %}
-      </form>
+      <h1>Users</h1>
+      <table class="table">
+        {% for user in users %}
+          <tr>
+            <td>
+              <img src="{{ user.mini_gravatar }}" alt="Gravatar of {{ user.username }}" class="rounded-circle" >
+            </td>
+            <td>{{ user.full_name }}</td>
+            <td><a href="{% url 'show_user' user.id %}">{{ user.username }}</a></td>
+          </tr>
+        {% endfor %}
+      </table>
     </div>
   </div>
 </div>

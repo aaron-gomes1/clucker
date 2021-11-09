@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect, render
 from .forms import LogInForm, SignUpForm, PostForm, UserListForm
-from .models import User
+from .models import User, Post
 from django.urls import reverse
 from .helpers import login_prohibited
 
@@ -25,15 +25,16 @@ def new_post(request):
 def show_user(request, user_id):
     try:
         user = User.objects.get(id=user_id)
+        posts = Post.objects.filter(author=user)
     except ObjectDoesNotExist:
         return redirect('users')
     else:
-        return render(request, 'show_user.html', {'user' : user})
+        return render(request, 'show_user.html', {'user': user, 'posts': posts})
 
 @login_required
 def user_list(request):
-    form = UserListForm()
-    return render(request, 'user_list.html', {'form': form})
+    users = User.objects.all()
+    return render(request, 'user_list.html', {'users': users})
 
 @login_prohibited
 def home(request):
