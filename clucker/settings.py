@@ -137,6 +137,9 @@ AUTH_USER_MODEL = 'microblogs.User'
 # Login URL for redircting users anf login purposes
 LOGIN_URL = 'log_in'
 
+# URL for @logged in prohitted
+REDIRECT_URL_WHEN_LOGGED_IN = 'feed'
+
 # Message level tags should use Bootstrap terms
 MESSAGE_TAGS = {
     message_constants.DEBUG: 'dark',

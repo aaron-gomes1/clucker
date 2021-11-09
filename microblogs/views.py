@@ -6,14 +6,7 @@ from django.shortcuts import redirect, render
 from .forms import LogInForm, SignUpForm, PostForm, UserListForm
 from .models import User
 from django.urls import reverse
-
-def login_prohibited(view_function):
-    def modified_view_function(request):
-        if request.user.is_authenticated:
-            return redirect('feed')
-        else:
-            return view_function(request)
-    return modified_view_function
+from .helpers import login_prohibited
 
 def new_post(request):
 
@@ -42,6 +35,7 @@ def user_list(request):
     form = UserListForm()
     return render(request, 'user_list.html', {'form': form})
 
+@login_prohibited
 def home(request):
     return render(request, 'home.html')
 
@@ -77,6 +71,7 @@ def log_in(request):
     next = request.GET.get('next') or ''
     return render(request, 'log_in.html', {'form': form, 'next': next})
 
+@login_prohibited
 def sign_up(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
