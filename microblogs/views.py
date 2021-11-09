@@ -42,14 +42,10 @@ def home(request):
 
 @login_required
 def feed(request):
-    if request.user.is_authenticated == True:
-        if request.method == 'POST':
-            return redirect('new_post')
-
-        form = PostForm()
-        return render(request, 'feed.html', {'form': form})
-    else:
-        return redirect('log_in')
+    form = PostForm()
+    current_user = request.user
+    posts = Post.objects.filter(author=current_user)
+    return render(request, 'feed.html', {'form': form, 'posts': posts})
 
 def log_out(request):
     logout(request)
