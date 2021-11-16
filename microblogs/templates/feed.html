@@ -3,7 +3,7 @@
 <div class="container">
   <div class="row">
     <div class="col-12">
-      <h1>Feed</h1>
+      {% include 'partials/user_profile.html' with following=False followable=False %}
       <form action="{% url 'feed' %}" method="post">
         {% csrf_token %}
         <input type="submit" value="New Post" class="btn btn-primary">

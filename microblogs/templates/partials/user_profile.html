@@ -17,11 +17,13 @@
           &emsp;
           <b>{{ user.followers.count }}</b> Followers
           <span class="float-end">
-            {% if following %}
-              <button class="btn btn-secondary">Unfollow</button>
-            {% else %}
-              <button class="btn btn-primary">Follow</button>
-            {% endif %}
+            {% if followable %}
+              {% if following %}
+                <button class="btn btn-secondary">Unfollow</button>
+                {% else %}
+                <button class="btn btn-primary">Follow</button>
+                {% endif %}
+              {% endif %}
           </span>
         </span>
       </p>
