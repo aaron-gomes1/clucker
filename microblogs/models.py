@@ -71,6 +71,6 @@ class Post(models.Model):
     text = models.TextField(
         max_length = 280,
         unique = False,
-        blank = True
+        blank = False
     )
     created_at = models.DateTimeField(auto_now_add=True, blank=False)

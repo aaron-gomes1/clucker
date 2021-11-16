@@ -19,19 +19,6 @@ def follow_toggle(request, user_id):
     else:
         return redirect('show_user', user_id=user_id)
 
-def new_post(request):
-
-    if request.user.is_authenticated == False:
-        redirect('feed')
-
-    if request.method == 'POST':
-        form = PostForm(request.POST)
-        form.save(request.user)
-        return redirect('feed')
-
-    form = PostForm()
-    return render(request, 'new_post.html', {'form' : form})
-
 @login_required
 def show_user(request, user_id):
     try:
@@ -57,8 +44,9 @@ def home(request):
 def feed(request):
     form = PostForm()
     current_user = request.user
-    posts = Post.objects.filter(author=current_user)
-    return render(request, 'feed.html', {'form': form, 'posts': posts,'user': current_user})
+    authors = list(current_user.followees.all()) + [current_user]
+    posts = Post.objects.filter(author__in=authors)
+    return render(request, 'feed.html', {'form': form, 'user': current_user, 'posts': posts})
 
 def log_out(request):
     logout(request)
@@ -95,3 +83,18 @@ def sign_up(request):
     else:
         form = SignUpForm()
     return render(request, 'sign_up.html', {'form': form})
+
+@login_required
+def new_post(request):
+    print("Hi")
+    if request.method == 'POST':
+        current_user = request.user
+        form = PostForm(request.POST)
+        if form.is_valid():
+            text = form.cleaned_data.get('text')
+            post = Post.objects.create(author=current_user, text=text)
+            return redirect('feed')
+        else:
+            return render(request, 'feed.html', {'form': form})
+    else:
+        return HttpResponseForbidden()
