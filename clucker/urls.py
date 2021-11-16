@@ -26,5 +26,6 @@ urlpatterns = [
     path('log_out/', views.log_out, name='log_out'),
     path('user/<int:user_id>', views.show_user, name='show_user'),
     path('users/', views.user_list, name='users'),
-    path('new_post/', views.new_post, name='new_post')
+    path('new_post/', views.new_post, name='new_post'),
+    path('follow_toggle/<int:user_id>', views.follow_toggle, name='follow_toggle')
 ]

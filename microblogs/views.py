@@ -8,6 +8,17 @@ from .models import User, Post
 from django.urls import reverse
 from .helpers import login_prohibited
 
+@login_required
+def follow_toggle(request, user_id):
+    current_user = request.user
+    try:
+        followee = User.objects.get(id=user_id)
+        current_user.toggle_follow(followee)
+    except ObjectDoesNotExist:
+        return redirect('users')
+    else:
+        return redirect('show_user', user_id=user_id)
+
 def new_post(request):
 
     if request.user.is_authenticated == False:
@@ -26,10 +37,11 @@ def show_user(request, user_id):
     try:
         user = User.objects.get(id=user_id)
         posts = Post.objects.filter(author=user)
+        following = request.user.is_following(user)
     except ObjectDoesNotExist:
         return redirect('users')
     else:
-        return render(request, 'show_user.html', {'user': user, 'posts': posts})
+        return render(request, 'show_user.html', {'user': user, 'posts': posts, 'following': following})
 
 @login_required
 def user_list(request):
