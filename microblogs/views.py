@@ -3,6 +3,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect, render
+from django.views import View
+from django.utils.decorators import method_decorator
+from django.http import HttpResponseForbidden
+from django.conf import settings
 from .forms import LogInForm, SignUpForm, PostForm, UserListForm
 from .models import User, Post
 from django.urls import reverse
@@ -52,24 +56,37 @@ def log_out(request):
     logout(request)
     return redirect('home')
 
-@login_prohibited
-def log_in(request):
-    if request.method == 'POST':
+class LogInView(View):
+    """View that handles log in"""
+
+    http_method_names = ['get', 'post']
+
+    @method_decorator(login_prohibited)
+    def dispatch(self, request):
+        return super().dispatch(request)
+
+    def get(self, request):
+        """Display log in template"""
+        self.next = request.GET.get('next') or ''
+        return self.render()
+
+    def post(self, request):
+        """Handle log in attempt"""
         form = LogInForm(request.POST)
-        next = request.POST.get('next') or ''
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                redirect_url = next or 'feed'
-                return redirect(redirect_url)
+        self.next = request.POST.get('next') or settings.REDIRECT_URL_WHEN_LOGGED_IN
+        user = form.get_user()
+        if user is not None:
+            login(request, user)
+            return redirect(self.next)
         messages.add_message(request, messages.ERROR, "The credentials provided were invalid!")
-    else:
-        next = request.GET.get('next') or ''
-    form = LogInForm()
-    return render(request, 'log_in.html', {'form': form, 'next': next})
+        return self.render()
+
+    def render(self):
+        """Render log in template with blank log in form"""
+
+        form = LogInForm()
+        return render(self.request, 'log_in.html', {'form': form, 'next': self.next})
+
 
 @login_prohibited
 def sign_up(request):
@@ -84,17 +101,18 @@ def sign_up(request):
         form = SignUpForm()
     return render(request, 'sign_up.html', {'form': form})
 
-@login_required
 def new_post(request):
-    print("Hi")
     if request.method == 'POST':
-        current_user = request.user
-        form = PostForm(request.POST)
-        if form.is_valid():
-            text = form.cleaned_data.get('text')
-            post = Post.objects.create(author=current_user, text=text)
-            return redirect('feed')
+        if request.user.is_authenticated:
+            current_user = request.user
+            form = PostForm(request.POST)
+            if form.is_valid():
+                text = form.cleaned_data.get('text')
+                post = Post.objects.create(author=current_user, text=text)
+                return redirect('feed')
+            else:
+                return render(request, 'feed.html', {'form': form})
         else:
-            return render(request, 'feed.html', {'form': form})
+            return redirect('log_in')
     else:
         return HttpResponseForbidden()

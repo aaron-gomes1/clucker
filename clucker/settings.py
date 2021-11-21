@@ -135,7 +135,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # USer model for authentication purposes
 AUTH_USER_MODEL = 'microblogs.User'
 
-# Login URL for redircting users anf login purposes
+# Login URL for redircting users any login purposes
 LOGIN_URL = 'log_in'
 
 # URL for @logged in prohitted
