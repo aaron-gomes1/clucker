@@ -5,8 +5,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect, render
 from django.views import View
 from django.utils.decorators import method_decorator
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, Http404
 from django.conf import settings
+from django.views.generic import ListView
+from django.views.generic.detail import DetailView
 from .forms import LogInForm, SignUpForm, PostForm, UserListForm
 from .models import User, Post
 from django.urls import reverse
@@ -23,22 +25,45 @@ def follow_toggle(request, user_id):
     else:
         return redirect('show_user', user_id=user_id)
 
-@login_required
-def show_user(request, user_id):
-    try:
-        user = User.objects.get(id=user_id)
-        posts = Post.objects.filter(author=user)
-        following = request.user.is_following(user)
-        followable = (request.user != user)
-    except ObjectDoesNotExist:
-        return redirect('users')
-    else:
-        return render(request, 'show_user.html', {'user': user, 'posts': posts, 'following': following, 'followable': followable})
+class ShowUserView(DetailView):
+    """View that shows indiviual user details"""
 
-@login_required
-def user_list(request):
-    users = User.objects.all()
-    return render(request, 'user_list.html', {'users': users})
+    model = User
+    template_name = 'show_user.html'
+    context_object_name = "user"
+    pk_url_kwarg = 'user_id'
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, *args, **kwargs):
+        """Generate content to be displayed in the template"""
+
+        context = super().get_context_data(*args, **kwargs)
+        user = self.get_object()
+        context['posts'] = Post.objects.filter(author=user)
+        context['following'] = self.request.user.is_following(user)
+        context['followable'] = (self.request.user != user)
+        return context
+
+    def get(self, request, *args, **kwargs):
+        """handle get request, and redirect to user_list if user_id invalid"""
+        try:
+            return super().get(request, *args, **kwargs)
+        except Http404:
+            return redirect('users')
+
+class UserListView(ListView):
+    """View that shows a list of all users"""
+
+    model = User
+    template_name = "user_list.html"
+    context_object_name = "users"
+
+    @method_decorator(login_required)
+    def dispatch(self, request):
+        return super().dispatch(request)
 
 @login_prohibited
 def home(request):
