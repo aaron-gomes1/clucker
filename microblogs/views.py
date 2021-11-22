@@ -1,15 +1,19 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.hashers import check_password
+from django.core.exceptions import ObjectDoesNotExist, ImproperlyConfigured
 from django.shortcuts import redirect, render
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.http import HttpResponseForbidden, Http404
 from django.conf import settings
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
-from .forms import LogInForm, SignUpForm, PostForm, UserListForm
+from django.views.generic.edit import FormView, UpdateView, CreateView
+from django.urls import reverse
+from .forms import LogInForm, SignUpForm, PostForm, PasswordForm, UserForm
 from .models import User, Post
 from django.urls import reverse
 from .helpers import login_prohibited
@@ -21,7 +25,7 @@ def follow_toggle(request, user_id):
         followee = User.objects.get(id=user_id)
         current_user.toggle_follow(followee)
     except ObjectDoesNotExist:
-        return redirect('users')
+        return redirect('user_list')
     else:
         return redirect('show_user', user_id=user_id)
 
@@ -52,18 +56,14 @@ class ShowUserView(DetailView):
         try:
             return super().get(request, *args, **kwargs)
         except Http404:
-            return redirect('users')
+            return redirect('user_list')
 
-class UserListView(ListView):
+class UserListView(LoginRequiredMixin, ListView):
     """View that shows a list of all users"""
 
     model = User
     template_name = "user_list.html"
     context_object_name = "users"
-
-    @method_decorator(login_required)
-    def dispatch(self, request):
-        return super().dispatch(request)
 
 @login_prohibited
 def home(request):
@@ -81,14 +81,36 @@ def log_out(request):
     logout(request)
     return redirect('home')
 
-class LogInView(View):
+class LoginProhibitedMixin:
+    """Mixin that redirects when a user is logged in"""
+
+    redirect_when_logged_in_url = None
+
+    def dispatch(self, *args, **kwargs):
+        """Redirects when logged in or dispatch as normal otherwise."""
+        if self.request.user.is_authenticated:
+            return self.handle_already_logged_in(*args, **kwargs)
+        return super().dispatch(*args, **kwargs)
+
+    def get_redirect_when_logged_in_url(self):
+        if self.redirect_when_logged_in_url is None:
+            raise ImproperlyConfigured(
+                "LoginProhibitedMixin requires either a value for "
+                "'redirect_when_logged_in_url', or an implementation for "
+                "'get_redirect_when_logged_in_url()'"
+            )
+        else:
+            return self.redirect_when_logged_in_url
+
+    def handle_already_logged_in(self, *args, **kwargs):
+        url = self.get_redirect_when_logged_in_url()
+        return redirect(url)
+
+class LogInView(LoginProhibitedMixin, View):
     """View that handles log in"""
 
     http_method_names = ['get', 'post']
-
-    @method_decorator(login_prohibited)
-    def dispatch(self, request):
-        return super().dispatch(request)
+    redirect_when_logged_in_url = 'feed'
 
     def get(self, request):
         """Display log in template"""
@@ -113,31 +135,71 @@ class LogInView(View):
         return render(self.request, 'log_in.html', {'form': form, 'next': self.next})
 
 
-@login_prohibited
-def sign_up(request):
+class SignUpView(LoginProhibitedMixin, FormView):
+    """View that signs up user."""
+
+    form_class = SignUpForm
+    template_name = "sign_up.html"
+    redirect_when_logged_in_url = settings.REDIRECT_URL_WHEN_LOGGED_IN
+
+    def form_valid(self, form):
+        self.object = form.save()
+        login(self.request, self.object)
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+
+class NewPostView(LoginRequiredMixin, CreateView):
+    """Class-based generic view for new post handling."""
+
+    model = Post
+    template_name = 'feed.html'
+    form_class = PostForm
+    http_method_names = ['post']
+
+    def form_valid(self, form):
+        """Process a valid form."""
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        """Return URL to redirect the user too after valid form handling."""
+        return reverse('feed')
+
+    def handle_no_permission(self):
+        return redirect('log_in')
+
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    """View to update logged-in user's profile."""
+
+    model = UserForm
+    template_name = "profile.html"
+    form_class = UserForm
+
+    def get_object(self):
+        """Return the object (user) to be updated."""
+        user = self.request.user
+        return user
+
+    def get_success_url(self):
+        """Return redirect URL after successful update."""
+        messages.add_message(self.request, messages.SUCCESS, "Profile updated!")
+        return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+
+@login_required
+def password(request):
+    current_user = request.user
     if request.method == 'POST':
-        form = SignUpForm(request.POST)
+        form = PasswordForm(data=request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('feed')
-
-    else:
-        form = SignUpForm()
-    return render(request, 'sign_up.html', {'form': form})
-
-def new_post(request):
-    if request.method == 'POST':
-        if request.user.is_authenticated:
-            current_user = request.user
-            form = PostForm(request.POST)
-            if form.is_valid():
-                text = form.cleaned_data.get('text')
-                post = Post.objects.create(author=current_user, text=text)
+            password = form.cleaned_data.get('password')
+            if check_password(password, current_user.password):
+                new_password = form.cleaned_data.get('new_password')
+                current_user.set_password(new_password)
+                current_user.save()
+                login(request, current_user)
+                messages.add_message(request, messages.SUCCESS, "Password updated!")
                 return redirect('feed')
-            else:
-                return render(request, 'feed.html', {'form': form})
-        else:
-            return redirect('log_in')
-    else:
-        return HttpResponseForbidden()
+    form = PasswordForm()
+    return render(request, 'password.html', {'form': form})

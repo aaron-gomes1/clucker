@@ -1,45 +1,36 @@
-"""Unit tests of the Post model."""
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from microblogs.models import Post, User
-from django.utils import timezone
 
-class PostModelTest(TestCase):
-    """Unit tests of the Post model."""
+class PostTest(TestCase):
 
     fixtures = ['microblogs/tests/fixtures/default_user.json']
 
     def setUp(self):
         super(TestCase, self).setUp()
         self.user = User.objects.get(username='@johndoe')
-
-        self.post = Post.objects.create(
-            author = self.user,
-            text="I am looking up at the sky"
+        self.post = Post(
+            author=self.user,
+            text="The quick brown fox jumps over the lazy dog."
         )
 
-    def test_valid_post(self):
-        self._assert_post_is_valid()
-
-    def test_user_author_be_blank(self):
-        self.post.author = None
-        self._assert_post_is_invalid()
-
-    def test_date_cannot_be_in_future(self):
-        assert self.post.created_at <= timezone.now()
-
-    def test_text_can_be_280_characters_long(self):
-        self.post.text = 'x' * 280
-
-    def test_text_cannot_be_nore_than_280_characters_long(self):
-        self.post.text = 'x' * 281
-
-    def _assert_post_is_valid(self):
+    def test_valid_message(self):
         try:
             self.post.full_clean()
-        except (ValidationError):
-            self.fail('Test post should be valid')
+        except ValidationError:
+            self.fail("Test message should be valid")
 
-    def _assert_post_is_invalid(self):
+    def test_author_must_not_be_blank(self):
+        self.post.author = None
+        with self.assertRaises(ValidationError):
+            self.post.full_clean()
+
+    def test_text_must_not_be_blank(self):
+        self.post.text = ''
+        with self.assertRaises(ValidationError):
+            self.post.full_clean()
+
+    def test_text_must_not_be_overlong(self):
+        self.post.text = 'x' * 281
         with self.assertRaises(ValidationError):
             self.post.full_clean()

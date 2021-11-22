@@ -1,14 +1,14 @@
 [
   {
-    "model": "microblogs.User",
+    "model": "microblogs.user",
     "pk": 1,
     "fields": {
       "first_name": "John",
       "last_name": "Doe",
       "username": "@johndoe",
       "email": "johndoe@example.org",
-      "bio": "Hello I am John Doe",
-      "password": "pbkdf2_sha256$260000$kgYWCvJZct9w8kKPNIoOpD$bg4CzPHUyPv17zWW8sm91lbY8KJSbzlzLZMoCtAWuJY=",
+      "bio": "Hello, I'm John Doe.",
+      "password": "pbkdf2_sha256$260000$4BNvFuAWoTT1XVU8D6hCay$KqDCG+bHl8TwYcvA60SGhOMluAheVOnF1PMz0wClilc=",
       "is_active": true
     }
   }

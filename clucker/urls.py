@@ -21,11 +21,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('feed/', views.feed, name='feed'),
-    path('sign_up/', views.sign_up, name='sign_up'),
+    path('password/', views.password, name='password'),
+    path('sign_up/', views.SignUpView.as_view(), name='sign_up'),
     path('log_in/', views.LogInView.as_view(), name='log_in'),
     path('log_out/', views.log_out, name='log_out'),
     path('user/<int:user_id>', views.ShowUserView.as_view(), name='show_user'),
-    path('users/', views.UserListView.as_view(), name='users'),
-    path('new_post/', views.new_post, name='new_post'),
-    path('follow_toggle/<int:user_id>', views.follow_toggle, name='follow_toggle')
+    path('users/', views.UserListView.as_view(), name='user_list'),
+    path('new_post/', views.NewPostView.as_view(), name='new_post'),
+    path('follow_toggle/<int:user_id>', views.follow_toggle, name='follow_toggle'),
+    path('profile/', views.ProfileUpdateView.as_view(), name='profile')
 ]

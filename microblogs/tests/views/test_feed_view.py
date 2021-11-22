@@ -1,26 +1,28 @@
-""""Test of the new post view"""
+"""Tests of the feed view."""
 from django.test import TestCase
 from django.urls import reverse
 from microblogs.forms import PostForm
 from microblogs.models import User
 from microblogs.tests.helpers import create_posts, reverse_with_next
 
+
 class FeedViewTestCase(TestCase):
-    """Test of the feed view"""
+    """Tests of the feed view."""
 
     fixtures = [
         'microblogs/tests/fixtures/default_user.json',
         'microblogs/tests/fixtures/other_users.json'
     ]
+
     def setUp(self):
         self.user = User.objects.get(username='@johndoe')
         self.url = reverse('feed')
 
     def test_feed_url(self):
-        self.assertEqual(self.url, '/feed/')
+        self.assertEqual(self.url,'/feed/')
 
     def test_get_feed(self):
-        self.client.login(username=self.user.username, password="Password123")
+        self.client.login(username=self.user.username, password='Password123')
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'feed.html')
@@ -33,8 +35,8 @@ class FeedViewTestCase(TestCase):
         response = self.client.get(self.url)
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
 
-    def test_feed_contains_posts_by_self_and_followers(self):
-        self.client.login(username=self.user.username, password="Password123")
+    def test_feed_contains_posts_by_self_and_followees(self):
+        self.client.login(username=self.user.username, password='Password123')
         jane = User.objects.get(username='@janedoe')
         petra = User.objects.get(username='@petrapickles')
         peter = User.objects.get(username='@peterpickles')

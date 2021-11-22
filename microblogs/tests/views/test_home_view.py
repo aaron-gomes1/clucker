@@ -1,19 +1,19 @@
-""""Test of the home view"""
+"""Tests of the home view."""
 from django.test import TestCase
 from django.urls import reverse
 from microblogs.models import User
 
 class HomeViewTestCase(TestCase):
-    """Test of the home view"""
+    """Tests of the home view."""
 
     fixtures = ['microblogs/tests/fixtures/default_user.json']
 
     def setUp(self):
         self.url = reverse('home')
-        self.user = User.objects.get(username="@johndoe")
+        self.user = User.objects.get(username='@johndoe')
 
     def test_home_url(self):
-        self.assertEqual(self.url, '/')
+        self.assertEqual(self.url,'/')
 
     def test_get_home(self):
         response = self.client.get(self.url)
