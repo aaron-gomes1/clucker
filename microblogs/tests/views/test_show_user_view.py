@@ -2,8 +2,9 @@ from django.test import TestCase
 from django.urls import reverse
 from microblogs.models import User, Post
 from microblogs.tests.helpers import create_posts, reverse_with_next
+from with_asserts.mixin import AssertHTMLMixin
 
-class ShowUserTest(TestCase):
+class ShowUserTest(TestCase, AssertHTMLMixin):
 
     fixtures = [
         'microblogs/tests/fixtures/default_user.json',
@@ -27,6 +28,16 @@ class ShowUserTest(TestCase):
         self.assertContains(response, "@janedoe")
         followable = response.context['followable']
         self.assertTrue(followable)
+        follow_toggle_url = reverse('follow_toggle', kwargs={'user_id': self.target_user.id})
+        query = f'.//form[@action="{follow_toggle_url}"]//button'
+        with self.assertHTML(response) as html:
+            button = html.find(query)
+            self.assertEqual(button.text, "Follow")
+        self.user.toggle_follow(self.target_user)
+        response = self.client.get(self.url)
+        with self.assertHTML(response) as html:
+            button = html.find(query)
+            self.assertEqual(button.text, "Unfollow")
 
     def test_get_show_user_with_own_id(self):
         self.client.login(username=self.user.username, password='Password123')
@@ -38,6 +49,11 @@ class ShowUserTest(TestCase):
         self.assertContains(response, "@johndoe")
         followable = response.context['followable']
         self.assertFalse(followable)
+        follow_toggle_url = reverse('follow_toggle', kwargs={'user_id': self.target_user.id})
+        query = f'.//form[@action="{follow_toggle_url}"]//button'
+        with self.assertHTML(response) as html:
+            button = html.find(query)
+            self.assertIsNone(button)
 
     def test_get_show_user_with_invalid_id(self):
         self.client.login(username=self.user.username, password='Password123')
