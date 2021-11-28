@@ -12,7 +12,6 @@ from django.conf import settings
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import FormView, UpdateView, CreateView
-from django.urls import reverse
 from .forms import LogInForm, SignUpForm, PostForm, PasswordForm, UserForm
 from .models import User, Post
 from django.urls import reverse
@@ -64,6 +63,7 @@ class UserListView(LoginRequiredMixin, ListView):
     model = User
     template_name = "user_list.html"
     context_object_name = "users"
+    paginate_by = settings.USERS_PER_PAGE
 
 @login_prohibited
 def home(request):

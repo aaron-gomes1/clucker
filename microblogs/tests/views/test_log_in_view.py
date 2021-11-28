@@ -139,28 +139,3 @@ class LogInViewTestCase(TestCase, LogInTester):
         messages_list = list(response.context['messages'])
         self.assertEqual(len(messages_list), 1)
         self.assertEqual(messages_list[0].level, messages.ERROR)
-
-    def test_can_authenticate_valid_user(self):
-        fixture = User.objects.get(username='@johndoe')
-        form_input = {'username': '@johndoe', 'password': 'Password123'}
-        form = LogInForm(data=form_input)
-        user = form.get_user()
-        self.assertEqual(user, fixture)
-
-    def test_invalid_credentials_do_not_authenticate(self):
-        form_input = {'username': '@johndoe', 'password': 'WrongPassword123'}
-        form = LogInForm(data=form_input)
-        user = form.get_user()
-        self.assertEqual(user, None)
-
-    def test_blank_password_do_not_authenticate(self):
-        form_input = {'username': '@johndoe', 'password': ''}
-        form = LogInForm(data=form_input)
-        user = form.get_user()
-        self.assertEqual(user, None)
-
-    def test_blank_usernae_do_not_authenticate(self):
-        form_input = {'username': '', 'password': 'Password123'}
-        form = LogInForm(data=form_input)
-        user = form.get_user()
-        self.assertEqual(user, None)
